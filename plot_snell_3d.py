@@ -7,17 +7,21 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from OCC.Display.SimpleGui import init_display
 from OCC.Core.gp import gp_Ax1, gp_Ax2, gp_Ax3
 from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir
+from OCC.Core.gp import gp_Pln
+from OCC.Extend.ShapeFactory import make_face
+from OCCUtils.Construct import make_plane
 
 from OCCDisplay import OCCDisplay
 
 
 class OpticsTraject_3D (OCCDisplay):
 
-    def __init__(self, xyz=[-50, -50, 0], vec=[1, 0, 0]):
+    def __init__(self, xyz=[-50, -50, 0], vec=[1, 1, 0]):
         super(OpticsTraject_3D, self).__init__()
 
-        self.cff = [1.1, 1.1, 1.0]
-        self.rng = [30.0, 1.5, 1.0]
+        self.cff = [1.5, 1.5, 2.0]
+        self.rng = [30.0, 5.0, 1.0]
+        self.sig = [10.0, 20.0, 30.0]
         self.set_axs(xyz, vec)
 
     def get_dat(self):
@@ -53,11 +57,13 @@ class OpticsTraject_3D (OCCDisplay):
         # Refractive index function
         return self.refract_3d(xyz)
 
-    def refract_2d(self, x=0, y=0):
-        ref_x = self.cff_x - (self.cff_x - 1) / \
-            (1 + np.exp(-(x - self.cff_x**2) / self.rng_x))
-        ref_y = self.cff_y - (self.cff_y - 1) / \
-            (1 + np.exp(-(y - self.cff_y**2) / self.rng_y))
+    def refract_1d(self, x=0, cff=1.0, rng=0.0, sig=0):
+        ref = cff - (cff - 1) / (1 + np.exp(-((x + sig) - cff**2) / rng))
+        return ref
+
+    def refract_2d(self, xy=[0, 0]):
+        ref_x = self.refract_1d(xy[0], self.cff[0], self.rng[0])
+        ref_y = self.refract_1d(xy[1], self.cff[1], self.rng[1])
         return ref_x + ref_y
 
     def refract_3d(self, pos=[0, 0, 0]):
@@ -65,11 +71,12 @@ class OpticsTraject_3D (OCCDisplay):
         for i, p in enumerate(pos):
             cff = self.cff[i]
             rng = self.rng[i]
-            ref += cff - (cff - 1) / (1 + np.exp(-(p - cff**2) / rng))
+            sig = self.sig[i]
+            ref += self.refract_1d(p, cff, rng, sig)
         return ref
 
     def plot_2d(self, dirname="./", pngname="plot_snell_3d"):
-
+        plt.figure()
         plt.subplot(311)
         plt.plot(self.t_range, self.dat[:, 0])
 
@@ -82,9 +89,38 @@ class OpticsTraject_3D (OCCDisplay):
         pngfile = dirname + pngname + "_xyz.png"
         plt.savefig(pngfile)
 
+        plt.figure()
+        plt.subplot(311)
+        px = self.dat[:, 0]
+        nx = self.refract_1d(px, self.cff[0], self.rng[0], self.sig[0])
+        plt.plot(px, nx)
+
+        plt.subplot(312)
+        px = self.dat[:, 1]
+        nx = self.refract_1d(px, self.cff[1], self.rng[1], self.sig[1])
+        plt.plot(px, nx)
+
+        plt.subplot(313)
+        px = self.dat[:, 2]
+        nx = self.refract_1d(px, self.cff[2], self.rng[2], self.sig[2])
+        plt.plot(px, nx)
+
+        pngfile = dirname + pngname + "_ref.png"
+        plt.savefig(pngfile)
+
     def plot_3d(self):
         print("ok")
         self.display.DisplayShape(gp_Pnt())
+
+        pln_x = make_plane(gp_Pnt(self.sig[0], 0, 0), gp_Vec(1, 0, 0))
+        self.display.DisplayShape(pln_x, color="RED", transparency=0.5)
+
+        pln_y = make_plane(gp_Pnt(0, self.sig[1], 0), gp_Vec(0, 1, 0))
+        self.display.DisplayShape(pln_y, color="GREEN", transparency=0.5)
+
+        pln_z = make_plane(gp_Pnt(0, 0, self.sig[2]), gp_Vec(0, 0, 1))
+        self.display.DisplayShape(pln_z, color="BLUE", transparency=0.5)
+
         for i, data in enumerate(self.dat):
             xyz = data[0], data[1], data[2]
             self.display.DisplayShape(gp_Pnt(*xyz))
