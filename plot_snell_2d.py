@@ -43,8 +43,8 @@ if __name__ == '__main__':
     r_0 = [0, 4]  # initial position
     theta_0 = np.pi / 6  # initial angle
 
-    v_0 = [refract_1d(r_0[0]) * np.cos(theta_0),
-           refract_1d(r_0[0]) * np.sin(theta_0)]
+    v_0 = [refract_2d(r_0[0]) * np.cos(theta_0),
+           refract_2d(r_0[0]) * np.sin(theta_0)]
 
     # Integration
     t_range = np.arange(0, 10, 0.01)
