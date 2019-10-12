@@ -58,7 +58,7 @@ class OpticsTraject_3D (OCCDisplay):
         return self.refract_3d(xyz)
 
     def refract_1d(self, x=0, cff=1.0, rng=0.0, sig=0):
-        ref = cff - (cff - 1) / (1 + np.exp(-((x + sig) - cff**2) / rng))
+        ref = cff / (1 + np.exp(-(x - sig) / rng))
         return ref
 
     def refract_2d(self, xy=[0, 0]):
