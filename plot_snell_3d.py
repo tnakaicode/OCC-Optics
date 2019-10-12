@@ -4,8 +4,12 @@ import numdifftools as nd
 from scipy.integrate import odeint
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+from OCC.Display.SimpleGui import init_display
+from OCC.Core.gp import gp_Ax1, gp_Ax2, gp_Ax3
+from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir
 
-class OpticsTraject (object):
+
+class OpticsTraject_3D (object):
 
     def __init__(self, xy=[-50, -50], th=45):
         self.cff_x = 1.1
@@ -52,7 +56,7 @@ class OpticsTraject (object):
         # Refractive index function
         return self.refract_2d(*xy)
 
-    def plot_2d(self, dirname="./", pngname="plot_snell"):
+    def plot_2d(self, dirname="./", pngname="plot_snell_3d"):
         sx, sy = 50.0, 50.0
         nx, ny = 100, 100
         px = np.linspace(-1, 1, nx) * 100
@@ -100,14 +104,14 @@ class OpticsTraject (object):
 
 
 if __name__ == '__main__':
-    obj = OpticsTraject()
+    obj = OpticsTraject_3D()
     obj.diff_run()
     obj.plot_2d()
 
     obj.initialize(xy=[-50, -50], th=30)
     obj.diff_run(t=[0, 100, 1.0])
-    obj.plot_2d(pngname="plot_snell01")
+    obj.plot_2d(pngname="plot_snell_3d01")
 
     obj.initialize(xy=[-50, -50], th=30)
     obj.diff_run(t=[0, 50, 0.01])
-    obj.plot_2d(pngname="plot_snell02")
+    obj.plot_2d(pngname="plot_snell_3d02")
