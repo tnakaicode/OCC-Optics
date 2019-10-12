@@ -8,42 +8,50 @@ from OCC.Display.SimpleGui import init_display
 from OCC.Core.gp import gp_Ax1, gp_Ax2, gp_Ax3
 from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir
 
+from OCCDisplay import OCCDisplay
 
-class OpticsTraject_3D (object):
 
-    def __init__(self, xy=[-50, -50], th=45):
-        self.cff_x = 1.1
-        self.rng_x = 30.0
-        self.cff_y = 1.5
-        self.rng_y = 1.5
-        self.initialize(xy, th)
+class OpticsTraject_3D (OCCDisplay):
+
+    def __init__(self, xyz=[-50, -50, 0], vec=[1, 0, 0]):
+        super(OpticsTraject_3D, self).__init__()
+
+        self.cff = [1.1, 1.1, 1.0]
+        self.rng = [30.0, 1.5, 1.0]
+        self.set_axs(xyz, vec)
+
+    def get_dat(self):
+        pnt = self.axs.Location()
+        vec = self.axs.Direction()
+        x, y, z = pnt.X(), pnt.Y(), pnt.Z()
+        p, q, r = vec.X(), vec.Y(), vec.Z()
+        return [x, y, z, p, q, r]
+
+    def set_axs(self, xyz=[0, 0, 0], vec=[1, 0, 0]):
+        ref = self.refract_3d(xyz)
+        n_vec = ref * np.array(vec)
+        self.axs = gp_Ax3(gp_Pnt(*xyz), gp_Dir(*n_vec))
 
     def diff_func(self, dat, t):
         # Compute the differential
-        pos = [dat[0], dat[1]]
-        vec = [dat[2], dat[3]]
+        pos = [*dat[0:3]]
+        vec = [*dat[3:6]]
         grd = nd.Gradient(self.refract)(pos)
         ref = self.refract(pos)
         #self.pos = [self.vec[0], self.vec[1]]
         #self.vec = [grd[0] * ref, grd[1] * ref]
-        return vec + [grd[0] * ref, grd[1] * ref] + [ref]
+        return vec + [grd[0] * ref, grd[1] * ref, grd[2] * ref]
 
     def diff_run(self, t=[0, 50, 0.01]):
         self.t_range = np.arange(*t)
-        ini_dat = self.pos + self.vec + [self.ref]
+        ini_dat = self.get_dat()
         dat = odeint(self.diff_func, ini_dat, self.t_range)
         self.dat = np.array(dat)
         print(self.dat)
 
-    def initialize(self, xy=[0, 0], th=0):
-        self.pos = [xy[0], xy[1]]
-        self.rad = np.deg2rad(th)
-
-        self.ref = self.refract_2d(*self.pos)
-        self.vec = [
-            self.ref * np.cos(self.rad),
-            self.ref * np.sin(self.rad)
-        ]
+    def refract(self, xyz=[0, 0, 0]):
+        # Refractive index function
+        return self.refract_3d(xyz)
 
     def refract_2d(self, x=0, y=0):
         ref_x = self.cff_x - (self.cff_x - 1) / \
@@ -52,66 +60,39 @@ class OpticsTraject_3D (object):
             (1 + np.exp(-(y - self.cff_y**2) / self.rng_y))
         return ref_x + ref_y
 
-    def refract(self, xy=[0, 0]):
-        # Refractive index function
-        return self.refract_2d(*xy)
+    def refract_3d(self, pos=[0, 0, 0]):
+        ref = 0
+        for i, p in enumerate(pos):
+            cff = self.cff[i]
+            rng = self.rng[i]
+            ref += cff - (cff - 1) / (1 + np.exp(-(p - cff**2) / rng))
+        return ref
 
     def plot_2d(self, dirname="./", pngname="plot_snell_3d"):
-        sx, sy = 50.0, 50.0
-        nx, ny = 100, 100
-        px = np.linspace(-1, 1, nx) * 100
-        py = np.linspace(-1, 1, ny) * 100
-        mesh = np.meshgrid(px, py)
-        func = self.refract(mesh)
 
-        xs, ys = mesh[0][0, 0], mesh[1][0, 0]
-        dx, dy = mesh[0][0, 1] - mesh[0][0, 0], mesh[1][1, 0] - mesh[1][0, 0]
-        mx, my = int((sy - ys) / dy), int((sx - xs) / dx)
-
-        fig, ax = plt.subplots()
-        divider = make_axes_locatable(ax)
-        ax.set_aspect('equal')
-
-        ax_x = divider.append_axes("bottom", 1.0, pad=0.5, sharex=ax)
-        ax_x.plot(mesh[0][mx, :], func[mx, :])
-        ax_x.set_title("y = {:.2f}".format(sy))
-
-        ax_y = divider.append_axes("right", 1.0, pad=0.5, sharey=ax)
-        ax_y.plot(func[:, my], mesh[1][:, my])
-        ax_y.set_title("x = {:.2f}".format(sx))
-
-        im = ax.contourf(*mesh, func, cmap="jet")
-        ax.plot(self.dat[:, 0], self.dat[:, 1])
-        plt.colorbar(im, ax=ax, shrink=0.9)
-
-        pngfile = dirname + pngname + ".png"
-        plt.savefig(pngfile)
-
-        plt.subplot(211)
+        plt.subplot(311)
         plt.plot(self.t_range, self.dat[:, 0])
 
-        plt.subplot(212)
+        plt.subplot(312)
         plt.plot(self.t_range, self.dat[:, 1])
 
-        pngfile = dirname + pngname + "_xy.png"
+        plt.subplot(313)
+        plt.plot(self.t_range, self.dat[:, 2])
+
+        pngfile = dirname + pngname + "_xyz.png"
         plt.savefig(pngfile)
 
-        plt.subplot()
-        plt.plot(self.t_range, self.dat[:, -1])
-
-        pngfile = dirname + pngname + "_ref.png"
-        plt.savefig(pngfile)
+    def plot_3d(self):
+        print("ok")
+        self.display.DisplayShape(gp_Pnt())
+        for i, data in enumerate(self.dat):
+            xyz = data[0], data[1], data[2]
+            self.display.DisplayShape(gp_Pnt(*xyz))
 
 
 if __name__ == '__main__':
     obj = OpticsTraject_3D()
-    obj.diff_run()
+    obj.diff_run(t=[0, 100, 2.0])
     obj.plot_2d()
-
-    obj.initialize(xy=[-50, -50], th=30)
-    obj.diff_run(t=[0, 100, 1.0])
-    obj.plot_2d(pngname="plot_snell_3d01")
-
-    obj.initialize(xy=[-50, -50], th=30)
-    obj.diff_run(t=[0, 50, 0.01])
-    obj.plot_2d(pngname="plot_snell_3d02")
+    obj.plot_3d()
+    obj.start_display()
