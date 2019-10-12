@@ -8,10 +8,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 class OpticsTraject (object):
 
     def __init__(self, xy=[-50, -50], th=45):
-        self.cff_x = 2.0
-        self.rng_x = 10.0
+        self.cff_x = 1.1
+        self.rng_x = 30.0
         self.cff_y = 1.5
-        self.rng_y = 20.0
+        self.rng_y = 0.1
         self.initialize(xy, th)
 
     def diff_func(self, dat, t):
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     obj.plot_2d()
 
     obj.initialize(xy=[-50, -50], th=30)
-    obj.diff_run(t=[0, 50, 0.1])
+    obj.diff_run(t=[0, 50, 1.0])
     obj.plot_2d(pngname="plot_snell01")
 
     obj.initialize(xy=[-50, -50], th=30)
