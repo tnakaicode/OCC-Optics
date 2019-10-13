@@ -10,7 +10,7 @@ Y2 = -2 + Y1 * Y1
 Y3 = np.cos(1 * Y1) / (X + 0.0131415)
 Y4 = 4 + np.sin(X) * np.cos(2 * X)
 Z = np.exp(-0.1 * X * X) * np.cos(0.3 *
-                               (X.reshape(100, 1)**2 + X.reshape(1, 100)**2))
+                                  (X.reshape(100, 1)**2 + X.reshape(1, 100)**2))
 #############################
 # you need this call ONCE
 app = pg.QtGui.QApplication([])

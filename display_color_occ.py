@@ -7,6 +7,8 @@ from OCC.Core.Quantity import Quantity_NOC_BLACK
 from OCC.Core.V3d import V3d_Plane, V3d_ColorScale
 from OCC.Core.Visual3d import Visual3d_ContextView
 
+from OCC.Core.MeshVS import MeshVS_DataSource3D
+
 from matplotlib import (_path, artist, cbook, cm, colors as mcolors, docstring,
                         lines as mlines, path as mpath, transforms)
 from matplotlib.collections import Collection
