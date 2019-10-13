@@ -1,8 +1,11 @@
+# http://ruggero.sci.yokohama-cu.ac.jp
+# http://ruggero.sci.yokohama-cu.ac.jp/data/pgGraphexample_3D.py
+
+import numpy as np
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 
 ### something to graph ######
-import numpy as np
 pi = 3.1415
 X = np.linspace(-10, 10, 100)
 Y1 = 2 + np.sin(X)
@@ -16,13 +19,6 @@ Z = np.exp(-0.1 * X * X) * np.cos(0.3 *
 app = pg.QtGui.QApplication([])
 #############################
 
-##### plot 3D surface data  ####
-w = gl.GLViewWidget()
-# Saddle example with x and y specified
-p = gl.GLSurfacePlotItem(x=X, y=X, z=Z, shader='heightColor')
-w.addItem(p)
-# show
-w.show()
 pg.QtGui.QApplication.exec_()
 
 # ==============================================
