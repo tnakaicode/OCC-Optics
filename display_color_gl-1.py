@@ -11,22 +11,8 @@ Y3 = np.cos(1 * Y1) / (X + 0.0131415)
 Y4 = 4 + np.sin(X) * np.cos(2 * X)
 Z = np.exp(-0.1 * X * X) * np.cos(0.3 *
                                (X.reshape(100, 1)**2 + X.reshape(1, 100)**2))
-#############################
-# you need this call ONCE
+
 app = pg.QtGui.QApplication([])
-#############################
-
-##### plot 3D surface data  ####
-w = gl.GLViewWidget()
-# Saddle example with x and y specified
-p = gl.GLSurfacePlotItem(x=X, y=X, z=Z, shader='heightColor')
-w.addItem(p)
-# show
-w.show()
-pg.QtGui.QApplication.exec_()
-
-# ==============================================
-
 ##### plot 3D line data  ####
 w = gl.GLViewWidget()
 # first line
@@ -43,7 +29,7 @@ p = np.array([X, Z, Y3])
 p = p.transpose()
 C = pg.glColor('b')
 ######## LINE  ############
-plt = gl.GLLinePlotItem(pos=p, connected=False, width=20.5, color=C)
+plt = gl.GLLinePlotItem(pos=p, width=20.5, color=C)
 w.addItem(plt)
 # third line
 Z = np.zeros(np.size(X))
