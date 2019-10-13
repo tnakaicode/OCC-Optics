@@ -2,63 +2,112 @@ import numpy as np
 import matplotlib.pyplot as plt
 import numdifftools as nd
 from scipy.integrate import odeint
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 class OpticsTraject (object):
 
-    def __init__(self):
-        print("ok")
+    def __init__(self, xy=[-50, -50], th=45):
+        self.cff_x = 1.1
+        self.rng_x = 30.0
+        self.cff_y = 1.5
+        self.rng_y = 1.5
+        self.initialize(xy, th)
 
+    def diff_func(self, dat, t):
+        # Compute the differential
+        pos = [dat[0], dat[1]]
+        vec = [dat[2], dat[3]]
+        grd = nd.Gradient(self.refract)(pos)
+        ref = self.refract(pos)
+        #self.pos = [self.vec[0], self.vec[1]]
+        #self.vec = [grd[0] * ref, grd[1] * ref]
+        return vec + [grd[0] * ref, grd[1] * ref] + [ref]
 
-def refract_1d(x=0):
-    cff = 2
-    rng = 0.8
-    val = cff - (cff - 1) / (1 + np.exp(-(x - cff**2) / rng))
-    return val
+    def diff_run(self, t=[0, 50, 0.01]):
+        self.t_range = np.arange(*t)
+        ini_dat = self.pos + self.vec + [self.ref]
+        dat = odeint(self.diff_func, ini_dat, self.t_range)
+        self.dat = np.array(dat)
+        print(self.dat)
 
+    def initialize(self, xy=[0, 0], th=0):
+        self.pos = [xy[0], xy[1]]
+        self.rad = np.deg2rad(th)
 
-def refract_2d(x=0, y=0):
-    cff_x = 2
-    rng_x = 0.1
-    ref_x = cff_x - (cff_x - 1) / (1 + np.exp(-(x - cff_x**2) / rng_x))
-    cff_y = 2
-    rng_y = 0.1
-    ref_y = cff_y - (cff_y - 1) / (1 + np.exp(-(y - cff_y**2) / rng_y))
-    return ref_x + ref_y
+        self.ref = self.refract_2d(*self.pos)
+        self.vec = [
+            self.ref * np.cos(self.rad),
+            self.ref * np.sin(self.rad)
+        ]
 
+    def refract_2d(self, x=0, y=0):
+        ref_x = self.cff_x - (self.cff_x - 1) / \
+            (1 + np.exp(-(x - self.cff_x**2) / self.rng_x))
+        ref_y = self.cff_y - (self.cff_y - 1) / \
+            (1 + np.exp(-(y - self.cff_y**2) / self.rng_y))
+        return ref_x + ref_y
 
-def n(r):
-    # Refractive index function
-    return refract_2d(*r)
+    def refract(self, xy=[0, 0]):
+        # Refractive index function
+        return self.refract_2d(*xy)
 
+    def plot_2d(self, dirname="./", pngname="plot_snell"):
+        sx, sy = 50.0, 50.0
+        nx, ny = 100, 100
+        px = np.linspace(-1, 1, nx) * 100
+        py = np.linspace(-1, 1, ny) * 100
+        mesh = np.meshgrid(px, py)
+        func = self.refract(mesh)
 
-def diff_y(y, t):
-    # Compute the differential
-    grd = nd.Gradient(n)([y[0], y[1]])
-    n_t = n([y[0], y[1]])
-    return [y[2], y[3], grd[0] * n_t, grd[1] * n_t]
+        xs, ys = mesh[0][0, 0], mesh[1][0, 0]
+        dx, dy = mesh[0][0, 1] - mesh[0][0, 0], mesh[1][1, 0] - mesh[1][0, 0]
+        mx, my = int((sy - ys) / dy), int((sx - xs) / dx)
+
+        fig, ax = plt.subplots()
+        divider = make_axes_locatable(ax)
+        ax.set_aspect('equal')
+
+        ax_x = divider.append_axes("bottom", 1.0, pad=0.5, sharex=ax)
+        ax_x.plot(mesh[0][mx, :], func[mx, :])
+        ax_x.set_title("y = {:.2f}".format(sy))
+
+        ax_y = divider.append_axes("right", 1.0, pad=0.5, sharey=ax)
+        ax_y.plot(func[:, my], mesh[1][:, my])
+        ax_y.set_title("x = {:.2f}".format(sx))
+
+        im = ax.contourf(*mesh, func, cmap="jet")
+        ax.plot(self.dat[:, 0], self.dat[:, 1])
+        plt.colorbar(im, ax=ax, shrink=0.9)
+
+        pngfile = dirname + pngname + ".png"
+        plt.savefig(pngfile)
+
+        plt.subplot(211)
+        plt.plot(self.t_range, self.dat[:, 0])
+
+        plt.subplot(212)
+        plt.plot(self.t_range, self.dat[:, 1])
+
+        pngfile = dirname + pngname + "_xy.png"
+        plt.savefig(pngfile)
+
+        plt.subplot()
+        plt.plot(self.t_range, self.dat[:, -1])
+
+        pngfile = dirname + pngname + "_ref.png"
+        plt.savefig(pngfile)
 
 
 if __name__ == '__main__':
-    r_0 = [0, 4]  # initial position
-    theta_0 = np.pi / 6  # initial angle
+    obj = OpticsTraject()
+    obj.diff_run()
+    obj.plot_2d()
 
-    v_0 = [refract_2d(r_0[0]) * np.cos(theta_0),
-           refract_2d(r_0[0]) * np.sin(theta_0)]
+    obj.initialize(xy=[-50, -50], th=30)
+    obj.diff_run(t=[0, 100, 1.0])
+    obj.plot_2d(pngname="plot_snell01")
 
-    # Integration
-    t_range = np.arange(0, 10, 0.01)
-    sol = odeint(diff_y, r_0 + v_0, t_range)
-
-    # Plotting the path
-    plt.plot(sol[:, 0], sol[:, 1], 'y', linewidth=2)
-
-    # Plotting function n
-    X, Y = np.mgrid[0:20:1000j, 0:20:1000j]
-    pcm = plt.pcolormesh(X, Y, n([X, Y]), cmap='jet', vmin=1)
-    cbar = plt.colorbar(pcm)
-    cbar.ax.set_ylabel("n  Refractive index")
-
-    plt.xlabel("cm")
-    plt.ylabel("cm")
-    plt.show()
+    obj.initialize(xy=[-50, -50], th=30)
+    obj.diff_run(t=[0, 50, 0.01])
+    obj.plot_2d(pngname="plot_snell02")
