@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
 from mpl_toolkits.mplot3d import Axes3D
 from math import *
 from matplotlib.figure import Figure
@@ -11,10 +11,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
-class ThreeDSurface_GraphWindow(FigureCanvas):  # Class for 3D window
+class ThreeDSurface_GraphWindow(FigureCanvasQTAgg):  # Class for 3D window
     def __init__(self):
         self.fig = plt.figure(figsize=(7, 7))
-        FigureCanvas.__init__(self, self.fig)  # creating FigureCanvas
+        FigureCanvasQTAgg.__init__(self, self.fig)  # creating FigureCanvas
         self.axes = self.fig.gca(projection='3d')  # generates 3D Axes object
         # self.axes.hold(False)  # clear axes on each run
         self.setWindowTitle("Main")  # sets Window title

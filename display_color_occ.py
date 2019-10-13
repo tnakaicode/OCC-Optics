@@ -4,8 +4,8 @@ from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCC.Core.AIS import AIS_Shape
 from OCC.Core.Quantity import Quantity_NOC_BLACK
 
-from OCC.Core.V3d import V3d_Plane
-
+from OCC.Core.V3d import V3d_Plane, V3d_ColorScale
+from OCC.Core.Visual3d import Visual3d_ContextView
 
 display, start_display, add_menu, add_function_to_menu = init_display()
 
