@@ -17,6 +17,7 @@ class GlMesh (object):
         gl_grid.scale(2, 2, 1)
         self.glw.addItem(gl_grid)
         self.ex1()
+        self.ex2()
 
     def ex1(self):
         # Example 1:
@@ -49,26 +50,27 @@ class GlMesh (object):
         m1.setGLOptions('additive')
         self.glw.addItem(m1)
 
+    def ex2(self):
+        # Example 2:
+        # Array of vertex positions, three per face
+        verts = np.empty((36, 3, 3), dtype=np.float32)
+        theta = np.linspace(0, 2 * np.pi, 37)[:-1]
+        verts[:, 0] = np.vstack(
+            [2 * np.cos(theta), 2 * np.sin(theta), [0] * 36]).T
+        verts[:, 1] = np.vstack(
+            [4 * np.cos(theta + 0.2), 4 * np.sin(theta + 0.2), [-1] * 36]).T
+        verts[:, 2] = np.vstack(
+            [4 * np.cos(theta - 0.2), 4 * np.sin(theta - 0.2), [1] * 36]).T
+
+        # Colors are specified per-vertex
+        colors = np.random.random(size=(verts.shape[0], 3, 4))
+        m2 = gl.GLMeshItem(vertexes=verts, vertexColors=colors, smooth=False, shader='balloon',
+                           drawEdges=True, edgeColor=(1, 1, 0, 1))
+        m2.translate(-5, 5, 0)
+        self.glw.addItem(m2)
+
 
 """
-# Example 2:
-# Array of vertex positions, three per face
-verts = np.empty((36, 3, 3), dtype=np.float32)
-theta = np.linspace(0, 2 * np.pi, 37)[:-1]
-verts[:, 0] = np.vstack([2 * np.cos(theta), 2 * np.sin(theta), [0] * 36]).T
-verts[:, 1] = np.vstack(
-    [4 * np.cos(theta + 0.2), 4 * np.sin(theta + 0.2), [-1] * 36]).T
-verts[:, 2] = np.vstack(
-    [4 * np.cos(theta - 0.2), 4 * np.sin(theta - 0.2), [1] * 36]).T
-
-# Colors are specified per-vertex
-colors = np.random.random(size=(verts.shape[0], 3, 4))
-m2 = gl.GLMeshItem(vertexes=verts, vertexColors=colors, smooth=False, shader='balloon',
-                   drawEdges=True, edgeColor=(1, 1, 0, 1))
-m2.translate(-5, 5, 0)
-w.addItem(m2)
-
-
 # Example 3:
 # sphere
 
