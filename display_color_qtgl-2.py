@@ -5,6 +5,7 @@ import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from pyqtgraph.Qt import QtCore, QtGui
 
+
 class GlMesh (object):
 
     def __init__(self):
@@ -12,44 +13,44 @@ class GlMesh (object):
         self.glw = gl.GLViewWidget()
         self.glw.show()
 
-        self.glg = gl.GLGridItem()
-        self.glg.scale(2, 2, 1)
-        self.glw.addItem(self.glg)
+        gl_grid = gl.GLGridItem()
+        gl_grid.scale(2, 2, 1)
+        self.glw.addItem(gl_grid)
+        self.ex1()
+
+    def ex1(self):
+        # Example 1:
+        # Array of vertex positions
+        # Array of vertex indexes defining faces
+        # Colors are specified per-face
+
+        verts = np.array([
+            [0, 0, 0],
+            [2, 0, 0],
+            [1, 2, 0],
+            [1, 1, 1],
+        ])
+        faces = np.array([
+            [0, 1, 2],
+            [0, 1, 3],
+            [0, 2, 3],
+            [1, 2, 3]
+        ])
+        colors = np.array([
+            [1, 0, 0, 0.3],
+            [0, 1, 0, 0.3],
+            [0, 0, 1, 0.3],
+            [1, 1, 0, 0.3]
+        ])
+
+        m1 = gl.GLMeshItem(vertexes=verts, faces=faces,
+                           faceColors=colors, smooth=False)
+        m1.translate(5, 5, 0)
+        m1.setGLOptions('additive')
+        self.glw.addItem(m1)
 
 
 """
-
-# Example 1:
-# Array of vertex positions and array of vertex indexes defining faces
-# Colors are specified per-face
-
-verts = np.array([
-    [0, 0, 0],
-    [2, 0, 0],
-    [1, 2, 0],
-    [1, 1, 1],
-])
-faces = np.array([
-    [0, 1, 2],
-    [0, 1, 3],
-    [0, 2, 3],
-    [1, 2, 3]
-])
-colors = np.array([
-    [1, 0, 0, 0.3],
-    [0, 1, 0, 0.3],
-    [0, 0, 1, 0.3],
-    [1, 1, 0, 0.3]
-])
-
-# Mesh item will automatically compute face normals.
-m1 = gl.GLMeshItem(vertexes=verts, faces=faces,
-                   faceColors=colors, smooth=False)
-m1.translate(5, 5, 0)
-m1.setGLOptions('additive')
-w.addItem(m1)
-
-
 # Example 2:
 # Array of vertex positions, three per face
 verts = np.empty((36, 3, 3), dtype=np.float32)
