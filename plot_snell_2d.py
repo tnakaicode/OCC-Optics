@@ -52,7 +52,7 @@ class OpticsTraject (object):
         # Refractive index function
         return self.refract_2d(*xy)
 
-    def plot_2d(self, dirname="./", pngname="plot_snell"):
+    def plot_countourf_2d(self, dirname="./tmp/", pngname="plot_snell"):
         sx, sy = 50.0, 50.0
         nx, ny = 100, 100
         px = np.linspace(-1, 1, nx) * 100
@@ -102,12 +102,12 @@ class OpticsTraject (object):
 if __name__ == '__main__':
     obj = OpticsTraject()
     obj.diff_run()
-    obj.plot_2d()
+    obj.plot_countourf_2d()
 
     obj.initialize(xy=[-50, -50], th=30)
     obj.diff_run(t=[0, 100, 1.0])
-    obj.plot_2d(pngname="plot_snell01")
+    obj.plot_countourf_2d(pngname="plot_snell01")
 
     obj.initialize(xy=[-50, -50], th=30)
     obj.diff_run(t=[0, 50, 0.01])
-    obj.plot_2d(pngname="plot_snell02")
+    obj.plot_countourf_2d(pngname="plot_snell02")

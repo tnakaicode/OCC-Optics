@@ -75,7 +75,7 @@ class OpticsTraject_3D (OCCDisplay):
             ref += self.refract_1d(p, cff, rng, sig)
         return ref
 
-    def plot_2d(self, dirname="./", pngname="plot_snell_3d"):
+    def plot_countourf_2d(self, dirname="./tmp/", pngname="plot_snell_3d"):
         plt.figure()
         plt.subplot(311)
         plt.plot(self.t_range, self.dat[:, 0])
@@ -129,6 +129,6 @@ class OpticsTraject_3D (OCCDisplay):
 if __name__ == '__main__':
     obj = OpticsTraject_3D()
     obj.diff_run(t=[0, 100, 2.0])
-    obj.plot_2d()
+    obj.plot_countourf_2d()
     obj.plot_3d()
     obj.start_display()
